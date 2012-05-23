@@ -60,14 +60,31 @@ extern int nfq_set_verdict(struct nfq_q_handle *qh,
 			     u_int32_t id,
 			     u_int32_t verdict,
 			     u_int32_t data_len,
-			     unsigned char *buf);
+			     const unsigned char *buf);
 
-extern int nfq_set_verdict_mark(struct nfq_q_handle *qh, 
-				  u_int32_t id,
-			   	  u_int32_t verdict, 
-				  u_int32_t mark,
-			   	  u_int32_t datalen,
-				  unsigned char *buf);
+extern int nfq_set_verdict2(struct nfq_q_handle *qh,
+			    u_int32_t id,
+			    u_int32_t verdict, 
+			    u_int32_t mark,
+			    u_int32_t datalen,
+			    const unsigned char *buf);
+
+extern int nfq_set_verdict_batch(struct nfq_q_handle *qh,
+			    u_int32_t id,
+			    u_int32_t verdict);
+
+extern int nfq_set_verdict_batch2(struct nfq_q_handle *qh,
+			    u_int32_t id,
+			    u_int32_t verdict,
+			    u_int32_t mark);
+
+extern __attribute__((deprecated))
+int nfq_set_verdict_mark(struct nfq_q_handle *qh, 
+			 u_int32_t id,
+			 u_int32_t verdict, 
+			 u_int32_t mark,
+			 u_int32_t datalen,
+			 const unsigned char *buf);
 
 /* message parsing function */
 
@@ -96,7 +113,32 @@ extern int nfq_get_physoutdev_name(struct nlif_handle *nlif_handle,
 extern struct nfqnl_msg_packet_hw *nfq_get_packet_hw(struct nfq_data *nfad);
 
 /* return -1 if problem, length otherwise */
-extern int nfq_get_payload(struct nfq_data *nfad, char **data);
+extern int nfq_get_payload(struct nfq_data *nfad, unsigned char **data);
+
+enum {
+	NFQ_XML_HW	= (1 << 0),
+	NFQ_XML_MARK	= (1 << 1),
+	NFQ_XML_DEV	= (1 << 2),
+	NFQ_XML_PHYSDEV	= (1 << 3),
+	NFQ_XML_PAYLOAD	= (1 << 4),
+	NFQ_XML_TIME	= (1 << 5),
+	NFQ_XML_ALL	= ~0U,
+};
+
+extern int nfq_snprintf_xml(char *buf, size_t len, struct nfq_data *tb, int flags);
+
+/*
+ * New API based on libmnl
+ */
+
+void nfq_nlmsg_cfg_build_request(struct nlmsghdr *nlh, uint16_t pf, uint8_t cmd);
+void nfq_nlmsg_cfg_add_copy(struct nlmsghdr *nlh, uint8_t mode, int range);
+
+void nfq_nlmsg_verdict_build(struct nlmsghdr *nlh, int id, int verdict);
+void nfq_nlmsg_verdict_add_mark(struct nlmsghdr *nlh, uint32_t mark);
+void nfq_nlmsg_verdict_add_pkt(struct nlmsghdr *nlh, const void *pkt, uint32_t pktlen);
+
+int nfq_nlmsg_parse(const struct nlmsghdr *nlh, struct nlattr **pkt);
 
 #ifdef __cplusplus
 } /* extern "C" */

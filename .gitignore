@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 *~
 .*.swp
 *.[oa]
@@ -22,3 +23,7 @@ libtool
 /INSTALL
 /Makefile.in
 /Makefile
+/build-aux/
+/config.*
+/doxygen.cfg
+/libnetfilter_queue.pc
