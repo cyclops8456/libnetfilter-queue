@@ -1,3 +1,192 @@
+libnetfilter-queue (0.0.17-3) unstable; urgency=low
+
+  [ /C=DE/ST=Berlin/L=Berlin/O=Netfilter Project/OU=Development/CN=laforge/emailAddress=laforge@netfilter.org ]
+  * add new queue userspace library
+  * remove bogus second manpage line
+  * add required config.sub and config.guess
+  * add (incomplete) support for libipq emulation API
+  * directory restructuring
+  * more restructuring work
+  * add autogen.sh
+  * build fixes following restructuring
+  * add gpl
+  * sync with all 'upstream' changes in libnfnetlink_log
+  * really implement a full test program.  returns NF_ACCEPT verdict for
+    all packets
+  * add libtoolize call (Eric Leblond)
+  * whitespace fix
+  * use new accessor functions (Eric Leblond, Harald Welte)
+  * fix build of utils against local libtool library
+  * fix include order
+  * fix "make dist"
+  * we have to clear the iovec
+  * rename libnfnetlink_queue to libnetfilter_queue
+  * rename files correctly (Eric Leblond)
+  * fix gcc warning
+  * remove 1.6 specific autotool calls
+  * abstract 'nfattr' in 'nfnl_q_data'
+  * rename all data types and functions to get rid of 'nl' (== netlink)
+    part in prefix
+  * get rid of superfluous 'datalength' parameter of nfq_get_payload()
+    function
+  * we have to link against libnfnetlink, otherwise the dependency is
+    missing
+  * fix nfq_get_timestamp() to use struct timeval and be endian correct
+  * - add library api versioning
+  * - don't install test program
+  * This patch add the ability to copy and mangle the kernel headers
+  * add KERNEL_DIR option to autogen.sh for all new libraries (Krzysztof
+    Oledzki)
+  * Introduce various API changes throughout the library stack
+  * make sure configure fails if libnfnetlink is too old (< 0.0.16)
+  * fix segfault due to missing h->nfnlh initialization (Closes: #434)
+    (Andreas Florath)
+  * fix __set_verdict() to correctly handle payload (Closes: #435)
+    (Andreas Florath)
+  * pkg-config enable all netfilter libraries
+  * only copy include file from kernel directory if 'autogen.sh' is run
+    with 'distrib' argument
+
+  [ /C=DE/ST=Berlin/L=Berlin/O=Netfilter Project/OU=Development/CN=kaber/emailAddress=kaber@netfilter.org ]
+  * [PATCH 3/6] libnetfilter_queue pkt-config changes (KOVACS Krisztian
+    <hidden@balabit.hu>)
+  * Add patch to set max. queue length (Eric Leblond)
+  * Bump version
+
+  [ /C=DE/ST=Berlin/L=Berlin/O=Netfilter Project/OU=Development/CN=pablo/emailAddress=pablo@netfilter.org ]
+  * comment `autoheader' invocation from autogen.sh, we don't need any
+    config.h file to compile the conntrack tool
+  * interface index to name API (Eric Leblond)
+  * Bump version to 0.0.15
+
+  [ /C=EU/ST=EU/CN=Pablo Neira Ayuso/emailAddress=pablo@netfilter.org ]
+  * remove linux/types.h include
+  * Signed-off-by: Paul P. Komkoff
+
+  [ Fabian Hugelshofer ]
+  * fix alignment issues
+
+  [ Jan Engelhardt ]
+  * libnfq: mark functions as extern C
+
+  [ Pablo Neira Ayuso ]
+  * bump version to 0.0.16 and bump libnfnetlink dependencies
+  * conditional compilation of testsuite utils
+  * doc: add library documentation from Brad Fisher
+
+  [ Eric Leblond ]
+  * doc: complete missing function documentation
+  * Change variable name to have an homogeneous naming
+  * Use nfq_fd function instead of call to nfnetlink function.
+  * Suppress double call of nfnl_subsys_close()
+  * Switch documentation style to doxygen.
+  * Add doxygen config file.
+
+  [ Pablo Neira Ayuso ]
+  * doc: put doxygen configuration file into diet
+
+  [ Bart De Schuymer ]
+  * nfqnl_test: add hw src address, physindev and physoutdev support
+
+  [ Pablo Neira Ayuso ]
+  * nfq: replace nfnl_talk by nfnl_query and disable sequence tracking
+  * build: bump version to 0.0.17
+  * nfq: add minor comment in the documentation to warn about privileges
+
+  [ Patrick McHardy ]
+  * remove libipq_compat
+
+  [ Holger Hans Peter Freyther ]
+  * doc: make doxygen.cfg.in work with doxygen 1.6.1
+
+  [ Pablo Neira Ayuso ]
+  * nfq: deprecate nfq_set_verdict_mark() in favour of
+    nfq_set_verdict2()
+
+  [ David Favro ]
+  * doc: enhancements
+
+  [ Alessandro Vesely ]
+  * doc: document possible verdicts on packets and minor change in
+    example
+
+  [ Pablo Neira Ayuso ]
+  * doc: remove references to deprecated nfq_set_verdict_mark()
+
+  [ David Fabro ]
+  * non-modified payload arguments are pointer-to-const
+  * payload buffer datatypes are consistent
+  * added .gitignore for base directory
+
+  [ Pablo Neira Ayuso ]
+  * add nfq_snprintf_xml() to output a packet in XML format
+  * nfq: fix compilation warning in nfq_snprintf_xml()
+  * nfq: consistent nfq_snprintf_xml() return value with snprintf()
+  * nfq: fix HW address output in nfq_snprintf_xml()
+  * nfq: remove `0x' from HW protocol in output of nfq_snprintf_xml()
+  * nfq: remove libipq.h
+  * build: add libtool m4 support
+  * nfq: bump version to 1.0.0
+  * nfq: add missing documentation on nfq_snprintf_xml()
+  * nfq: add myself to the copyright notice
+  * nfq: fix redundant LIBVERSION definition
+  * license: upgrade to GPLv2+
+
+  [ Jan Engelhardt ]
+  * build: build: use autoconf-suggested naming of files
+  * build: use modern call syntax for AC_INIT, AM_INIT_AUTOMAKE
+  * build: avoid use of deprecated INCLUDES
+  * build: use simpler autoreconf in autogen
+  * build: run AC_CANONICAL_HOST only
+  * build: no need for error message in PKG_CHECK_MODULES
+  * build: set Libs.private for pkgconfig file
+  * build: remove statements without effect
+  * build: remove -fPIC flag
+  * Update .gitignore
+  * build: default to not building static libraries
+  * build: use AC_OUTPUT
+
+  [ Pablo Neira Ayuso ]
+  * doc: document some performance tweaks for libnetfilter_queue
+
+  [ Alessandro Vesely ]
+  * utils: document ENOBUFS in nfqnl_test.c
+
+  [ Pablo Neira Ayuso ]
+  * doc: fix wrong documentation on NFQNL_COPY_NONE
+
+  [ Jan Engelhardt ]
+  * build: remove unused LIBTOOL_DEPS
+  * build: create a Make_global.am file
+  * build: use -Wall across the entire source
+
+  [ Pablo Neira Ayuso ]
+  * build: fix `make distcheck'
+  * build: Linux kernel-style for compilation messages
+
+  [ Jan Engelhardt ]
+  * build: fix error with automake-1.9
+  * build: fix file list warning with automake-1.9
+
+  [ Florian Westphal ]
+  * src: add NFQNL_MSG_VERDICT_BATCH support
+  * src: add notes on NF_STOLEN and NF_REPEAT to documentation
+
+  [ Jan Engelhardt ]
+  * Update .gitignore
+  * build: use AC_CONFIG_AUX_DIR and stash away tools
+  * build: disable implicit .tar.gz archive generation and use POSIX
+    mode
+
+  [ Pablo Neira Ayuso ]
+  * build: bump version to 1.0.1
+  * add new libnetfilter_queue API for libmnl
+  * add pkt_buff and protocol helper functions
+
+  [ Gaurav Sinha ]
+
+ -- Gaurav Sinha <gaurav.sinha@vyatta.com>  Wed, 23 May 2012 15:35:01 -0700
+
 libnetfilter-queue (0.0.17-2) unstable; urgency=low
 
   * fix build with autoreconf in build target
