@@ -1,3 +1,9 @@
+libnetfilter-queue (0.0.17-2) unstable; urgency=low
+
+  * fix build with autoreconf in build target
+
+ -- Gaurav Sinha <gaurav.sinha@vyatta.com>  Wed, 23 May 2012 15:18:20 -0700
+
 libnetfilter-queue (0.0.17-1) unstable; urgency=low
 
   [ Max Kellermann ]
