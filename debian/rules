@@ -18,7 +18,7 @@ endif
 build: build-stamp
 build-stamp:
 	dh_testdir
-
+	autoreconf -i
 	# ./configure
 	CFLAGS="$(CFLAGS)" ./configure --host=$(DEB_HOST_GNU_TYPE) --build=$(DEB_BUILD_GNU_TYPE) \
 		--disable-dependency-tracking \
