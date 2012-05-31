@@ -11,6 +11,7 @@
 
 #include <stdio.h>
 #include <string.h> /* for memcpy */
+#include <stdbool.h>
 #include <arpa/inet.h>
 #include <netinet/ip.h>
 #include <netinet/ip6.h>
@@ -169,6 +170,27 @@ int nfq_tcp_snprintf(char *buf, size_t size, const struct tcphdr *tcph)
 	/* Not TCP options implemented yet, sorry. */
 }
 EXPORT_SYMBOL(nfq_tcp_snprintf);
+
+int
+nfq_tcp_mangle_ipv4(struct pkt_buff *pkt,
+		    unsigned int match_offset, unsigned int match_len,
+		    const char *rep_buffer, unsigned int rep_len)
+{
+	struct iphdr *iph;
+	struct tcphdr *tcph;
+
+	iph = (struct iphdr *)pkt->network_header;
+	tcph = (struct tcphdr *)(pkt->network_header + iph->ihl*4);
+
+	if (!nfq_ip_mangle(pkt, iph->ihl*4 + tcph->doff*4,
+				match_offset, match_len, rep_buffer, rep_len))
+		return 0;
+
+	nfq_tcp_compute_checksum_ipv4(tcph, iph);
+
+	return 1;
+}
+EXPORT_SYMBOL(nfq_tcp_mangle_ipv4);
 
 /**
  * @}
