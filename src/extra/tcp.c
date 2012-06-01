@@ -11,6 +11,7 @@
 
 #include <stdio.h>
 #include <string.h> /* for memcpy */
+#include <stdbool.h>
 #include <arpa/inet.h>
 #include <netinet/ip.h>
 #include <netinet/ip6.h>
@@ -170,91 +171,26 @@ int nfq_tcp_snprintf(char *buf, size_t size, const struct tcphdr *tcph)
 }
 EXPORT_SYMBOL(nfq_tcp_snprintf);
 
-/* XXX remove this */
-#include <stdio.h>
-#define pr_debug printf
-
-/* Frobs data inside this packet, which is linear. */
-static void mangle_contents(struct pkt_buff *pkt,
-			    unsigned int dataoff,
-			    unsigned int match_offset,
-			    unsigned int match_len,
-			    const char *rep_buffer,
-			    unsigned int rep_len)
-{
-	unsigned char *data;
-	struct iphdr *iph = (struct iphdr *)(pkt->data);
-
-	data = pkt->network_header + dataoff;
-
-	/* move post-replacement */
-	memmove(data + match_offset + rep_len,
-		data + match_offset + match_len,
-		pkt->tail - (pkt->network_header + dataoff +
-			     match_offset + match_len));
-
-	/* insert data from buffer */
-	memcpy(data + match_offset, rep_buffer, rep_len);
-
-	/* update pkt info */
-	if (rep_len > match_len) {
-		pr_debug("nf_nat_mangle_packet: Extending packet by "
-			 "%u from %u bytes\n", rep_len - match_len, pkt->len);
-		pktb_put(pkt, rep_len - match_len);
-	} else {
-		pr_debug("nf_nat_mangle_packet: Shrinking packet from "
-			 "%u from %u bytes\n", match_len - rep_len, pkt->len);
-		pktb_trim(pkt, pkt->len + rep_len - match_len);
-	}
-
-	/* fix IP hdr checksum information */
-	iph->tot_len = htons(pkt->len);
-	nfq_ip_set_checksum(pkt->network_header);
-}
-
-static int pktb_expand_tail(struct pkt_buff *pkt, int extra)
-{
-	/* XXX possible reallocation, fix this */
-	pkt->len += extra;
-	pkt->tail = pkt->tail + extra;
-	return 0;
-}
-
-static int enlarge_pkt(struct pkt_buff *pkt, unsigned int extra)
-{
-	if (pkt->len + extra > 65535)
-		return 0;
-
-	if (pktb_expand_tail(pkt, extra - pktb_tailroom(pkt)))
-		return 0;
-
-	return 1;
-}
-
 int
-nfq_tcp_mangle(struct pkt_buff *pkt,
-	       unsigned int match_offset, unsigned int match_len,
-	       const char *rep_buffer, unsigned int rep_len)
+nfq_tcp_mangle_ipv4(struct pkt_buff *pkt,
+		    unsigned int match_offset, unsigned int match_len,
+		    const char *rep_buffer, unsigned int rep_len)
 {
 	struct iphdr *iph;
 	struct tcphdr *tcph;
 
-	if (rep_len > match_len &&
-	    rep_len - match_len > pktb_tailroom(pkt) &&
-	    !enlarge_pkt(pkt, rep_len - match_len))
-		return 0;
-
 	iph = (struct iphdr *)pkt->network_header;
 	tcph = (struct tcphdr *)(pkt->network_header + iph->ihl*4);
 
-	mangle_contents(pkt, iph->ihl*4 + tcph->doff*4,
-			match_offset, match_len, rep_buffer, rep_len);
+	if (!nfq_ip_mangle(pkt, iph->ihl*4 + tcph->doff*4,
+				match_offset, match_len, rep_buffer, rep_len))
+		return 0;
 
 	nfq_tcp_compute_checksum_ipv4(tcph, iph);
 
 	return 1;
 }
-EXPORT_SYMBOL(nfq_tcp_mangle);
+EXPORT_SYMBOL(nfq_tcp_mangle_ipv4);
 
 /**
  * @}

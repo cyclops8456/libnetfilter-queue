@@ -17,7 +17,7 @@
 static struct mnl_socket *nl;
 
 static struct nlmsghdr *
-nfq_build_header(char *buf, int type, uint32_t queue_num)
+nfq_hdr_put(char *buf, int type, uint32_t queue_num)
 {
 	struct nlmsghdr *nlh = mnl_nlmsg_put_header(buf);
 	nlh->nlmsg_type	= (NFNL_SUBSYS_QUEUE << 8) | type;
@@ -38,8 +38,8 @@ nfq_send_verdict(int queue_num, uint32_t id)
 	struct nlmsghdr *nlh;
 	int ret;
 
-	nlh = nfq_build_header(buf, NFQNL_MSG_VERDICT, queue_num);
-	nfq_nlmsg_verdict_build(nlh, id, NF_ACCEPT);
+	nlh = nfq_hdr_put(buf, NFQNL_MSG_VERDICT, queue_num);
+	nfq_nlmsg_verdict_put(nlh, id, NF_ACCEPT);
 
 	if (mnl_socket_sendto(nl, nlh, nlh->nlmsg_len) < 0) {
 		perror("mnl_socket_send");
@@ -105,32 +105,32 @@ int main(int argc, char *argv[])
 	}
 	portid = mnl_socket_get_portid(nl);
 
-	nlh = nfq_build_header(buf, NFQNL_MSG_CONFIG, 0);
-	nfq_nlmsg_cfg_build_request(nlh, AF_INET, NFQNL_CFG_CMD_PF_UNBIND);
+	nlh = nfq_hdr_put(buf, NFQNL_MSG_CONFIG, 0);
+	nfq_nlmsg_cfg_put_cmd(nlh, AF_INET, NFQNL_CFG_CMD_PF_UNBIND);
 
 	if (mnl_socket_sendto(nl, nlh, nlh->nlmsg_len) < 0) {
 		perror("mnl_socket_send");
 		exit(EXIT_FAILURE);
 	}
 
-	nlh = nfq_build_header(buf, NFQNL_MSG_CONFIG, 0);
-	nfq_nlmsg_cfg_build_request(nlh, AF_INET, NFQNL_CFG_CMD_PF_BIND);
+	nlh = nfq_hdr_put(buf, NFQNL_MSG_CONFIG, 0);
+	nfq_nlmsg_cfg_put_cmd(nlh, AF_INET, NFQNL_CFG_CMD_PF_BIND);
 
 	if (mnl_socket_sendto(nl, nlh, nlh->nlmsg_len) < 0) {
 		perror("mnl_socket_send");
 		exit(EXIT_FAILURE);
 	}
 
-	nlh = nfq_build_header(buf, NFQNL_MSG_CONFIG, queue_num);
-	nfq_nlmsg_cfg_build_request(nlh, AF_INET, NFQNL_CFG_CMD_BIND);
+	nlh = nfq_hdr_put(buf, NFQNL_MSG_CONFIG, queue_num);
+	nfq_nlmsg_cfg_put_cmd(nlh, AF_INET, NFQNL_CFG_CMD_BIND);
 
 	if (mnl_socket_sendto(nl, nlh, nlh->nlmsg_len) < 0) {
 		perror("mnl_socket_send");
 		exit(EXIT_FAILURE);
 	}
 
-	nlh = nfq_build_header(buf, NFQNL_MSG_CONFIG, queue_num);
-	nfq_nlmsg_cfg_add_copy(nlh, NFQNL_COPY_PACKET, 0xffff);
+	nlh = nfq_hdr_put(buf, NFQNL_MSG_CONFIG, queue_num);
+	nfq_nlmsg_cfg_put_params(nlh, NFQNL_COPY_PACKET, 0xffff);
 
 	if (mnl_socket_sendto(nl, nlh, nlh->nlmsg_len) < 0) {
 		perror("mnl_socket_send");

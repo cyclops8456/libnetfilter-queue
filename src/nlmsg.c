@@ -1,6 +1,5 @@
 /*
  * (C) 2012 by Pablo Neira Ayuso <pablo@netfilter.org>
- * (C) 2012 by Alejandro Castano del Castillo <alex@wadobo.org>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published
@@ -14,7 +13,6 @@
 #include <string.h>
 
 #include <libmnl/libmnl.h>
-#include <linux/types.h>
 
 #ifndef __aligned_be64
 #define __aligned_be64 __be64 __attribute__((aligned(8)))
@@ -32,7 +30,7 @@
  * @{
  */
 
-void nfq_nlmsg_verdict_build(struct nlmsghdr *nlh, int id, int verdict)
+void nfq_nlmsg_verdict_put(struct nlmsghdr *nlh, int id, int verdict)
 {
 	struct nfqnl_msg_verdict_hdr vh = {
 		.verdict	= htonl(verdict),
@@ -40,19 +38,20 @@ void nfq_nlmsg_verdict_build(struct nlmsghdr *nlh, int id, int verdict)
 	};
 	mnl_attr_put(nlh, NFQA_VERDICT_HDR, sizeof(vh), &vh);
 }
-EXPORT_SYMBOL(nfq_nlmsg_verdict_build);
+EXPORT_SYMBOL(nfq_nlmsg_verdict_put);
 
-void nfq_nlmsg_verdict_add_mark(struct nlmsghdr *nlh, uint32_t mark)
+void nfq_nlmsg_verdict_put_mark(struct nlmsghdr *nlh, uint32_t mark)
 {
 	mnl_attr_put_u32(nlh, NFQA_MARK, htonl(mark));
 }
-EXPORT_SYMBOL(nfq_nlmsg_verdict_add_mark);
+EXPORT_SYMBOL(nfq_nlmsg_verdict_put_mark);
 
-void nfq_nlmsg_verdict_add_pkt(struct nlmsghdr *nlh, const void *pkt, uint32_t pktlen)
+void
+nfq_nlmsg_verdict_put_pkt(struct nlmsghdr *nlh, const void *pkt, uint32_t plen)
 {
-	mnl_attr_put(nlh, NFQA_PAYLOAD, pktlen, pkt);
+	mnl_attr_put(nlh, NFQA_PAYLOAD, plen, pkt);
 }
-EXPORT_SYMBOL(nfq_nlmsg_verdict_add_pkt);
+EXPORT_SYMBOL(nfq_nlmsg_verdict_put_pkt);
 
 /**
  * @}
@@ -83,7 +82,7 @@ EXPORT_SYMBOL(nfq_nlmsg_verdict_add_pkt);
  * - NFQNL_CFG_CMD_PF_UNBIND: Unbinds from processing packets belonging to the
  *   given protocol family.
  */
-void nfq_nlmsg_cfg_build_request(struct nlmsghdr *nlh, uint16_t pf, uint8_t cmd)
+void nfq_nlmsg_cfg_put_cmd(struct nlmsghdr *nlh, uint16_t pf, uint8_t cmd)
 {
 	struct nfqnl_msg_config_cmd command = {
 		.command = cmd,
@@ -91,9 +90,9 @@ void nfq_nlmsg_cfg_build_request(struct nlmsghdr *nlh, uint16_t pf, uint8_t cmd)
 	};
 	mnl_attr_put(nlh, NFQA_CFG_CMD, sizeof(command), &command);
 }
-EXPORT_SYMBOL(nfq_nlmsg_cfg_build_request);
+EXPORT_SYMBOL(nfq_nlmsg_cfg_put_cmd);
 
-void nfq_nlmsg_cfg_add_copy(struct nlmsghdr *nlh, uint8_t mode, int range)
+void nfq_nlmsg_cfg_put_params(struct nlmsghdr *nlh, uint8_t mode, int range)
 {
 	struct nfqnl_msg_config_params params = {
 		.copy_range = htonl(range),
@@ -101,7 +100,13 @@ void nfq_nlmsg_cfg_add_copy(struct nlmsghdr *nlh, uint8_t mode, int range)
 	};
 	mnl_attr_put(nlh, NFQA_CFG_PARAMS, sizeof(params), &params);
 }
-EXPORT_SYMBOL(nfq_nlmsg_cfg_add_copy);
+EXPORT_SYMBOL(nfq_nlmsg_cfg_put_params);
+
+void nfq_nlmsg_cfg_put_qmaxlen(struct nlmsghdr *nlh, uint32_t queue_maxlen)
+{
+	mnl_attr_put_u32(nlh, NFQA_CFG_QUEUE_MAXLEN, htonl(queue_maxlen));
+}
+EXPORT_SYMBOL(nfq_nlmsg_cfg_put_qmaxlen);
 
 /**
  * @}
