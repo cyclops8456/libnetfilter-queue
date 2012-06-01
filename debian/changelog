@@ -1,3 +1,14 @@
+libnetfilter-queue (0.0.17-4) unstable; urgency=low
+
+  [ Pablo Neira Ayuso ]
+  * add new libnetfilter_queue API for libmnl
+  * add pkt_buff and protocol helper functions
+  * add mangle functions for IPv4/TCP and IPv4/UDP
+
+  [ Gaurav Sinha ]
+
+ -- Gaurav Sinha <gaurav.sinha@vyatta.com>  Fri, 01 Jun 2012 11:39:13 -0700
+
 libnetfilter-queue (0.0.17-3) unstable; urgency=low
 
   [ /C=DE/ST=Berlin/L=Berlin/O=Netfilter Project/OU=Development/CN=laforge/emailAddress=laforge@netfilter.org ]
