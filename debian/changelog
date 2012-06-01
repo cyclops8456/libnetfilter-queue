@@ -1,3 +1,9 @@
+libnetfilter-queue (0.0.17-5) unstable; urgency=low
+
+  * re-merge ipv4.c and commit
+
+ -- Gaurav Sinha <gaurav.sinha@vyatta.com>  Fri, 01 Jun 2012 11:44:21 -0700
+
 libnetfilter-queue (0.0.17-4) unstable; urgency=low
 
   [ Pablo Neira Ayuso ]
