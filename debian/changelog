@@ -1,3 +1,9 @@
+libnetfilter-queue (0.0.17-6+daisy1) unstable; urgency=low
+
+  * create daisy branch
+
+ -- John Southworth <john.southworth@vyatta.com>  Sat, 13 Oct 2012 13:29:42 -0700
+
 libnetfilter-queue (0.0.17-6) unstable; urgency=low
 
   * new branch
