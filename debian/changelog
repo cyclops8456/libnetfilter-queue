@@ -1,3 +1,9 @@
+libnetfilter-queue (0.0.17-6) unstable; urgency=low
+
+  * new branch
+
+ -- John Southworth <john.southworth@vyatta.com>  Fri, 12 Oct 2012 19:45:24 -0700
+
 libnetfilter-queue (0.0.17-5) unstable; urgency=low
 
   * re-merge ipv4.c and commit
