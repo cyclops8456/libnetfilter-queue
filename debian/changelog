@@ -1,3 +1,9 @@
+libnetfilter-queue (0.0.17-6+hydrogen1) unstable; urgency=low
+
+  * New branch
+
+ -- Daniil Baturin <daniil@baturin.org>  Sat, 16 Nov 2013 23:39:22 +0100
+
 libnetfilter-queue (0.0.17-6+daisy1) unstable; urgency=low
 
   * create daisy branch
