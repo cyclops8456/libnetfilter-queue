@@ -1,3 +1,9 @@
+libnetfilter-queue (0.0.17-6+vyos2+lithium1) unstable; urgency=low
+
+  * New branch
+
+ -- Alex Harpin <development@landsofshadow.co.uk>  Thu, 11 Dec 2014 18:20:25 +0000
+ 
 libnetfilter-queue (0.0.17-6+vyos1+helium2) unstable; urgency=low
 
   * Correct version
