@@ -1,3 +1,9 @@
+libnetfilter-queue (0.0.17-6+vyos2+lithium2) unstable; urgency=low
+
+  * Update maintainer address
+
+ -- Alex Harpin <development@landsofshadow.co.uk>  Tue, 23 Dec 2014 20:59:26 +0000
+ 
 libnetfilter-queue (0.0.17-6+vyos2+lithium1) unstable; urgency=low
 
   * New branch
