@@ -1,7 +1,7 @@
 Source: libnetfilter-queue
 Section: libs
 Priority: extra
-Maintainer: netfilter maintainers <netfilter-maintainers@ned.snow-crash.org>
+Maintainer: VyOS Package Maintainers <maintainers@vyos.net>
 Uploaders: Max Kellermann <max@duempel.org>, Alexander Wirt <formorer@debian.org>
 Homepage: http://www.netfilter.org/projects/libnetfilter_queue/
 Build-Depends: debhelper (>= 5), libnfnetlink-dev (>= 0.0.41)
