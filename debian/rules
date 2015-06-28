@@ -68,7 +68,11 @@ binary-arch: build install
 	dh_makeshlibs -a -V 'libnetfilter-queue1 (>= 0.0.15)'
 	dh_installdeb -a
 	dh_shlibdeps -a
-	dh_gencontrol -a
+	if [ -f "../.VYOS_DEV_BUILD" ]; \
+		then dh_gencontrol -a -- -v999.dev; \
+	else \
+		dh_gencontrol -a; \
+	fi
 	dh_md5sums -a
 	dh_builddeb -a
 
