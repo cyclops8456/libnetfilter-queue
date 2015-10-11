@@ -1,3 +1,10 @@
+libnetfilter-queue (1.0.1-1+vyos2+lithium4) unstable; urgency=low
+
+  [ Alex Harpin ]
+  * Set package version to actual version (currently 1.0.1)
+
+ -- Alex Harpin <development@landsofshadow.co.uk>  Sun, 11 Oct 2015 15:55:57 +0100
+ 
 libnetfilter-queue (0.0.17-6+vyos2+lithium3) unstable; urgency=low
 
   * libnetfilter-queue: add dh_gencontrol to enable development builds
