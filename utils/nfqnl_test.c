@@ -5,18 +5,19 @@
 #include <netinet/in.h>
 #include <linux/types.h>
 #include <linux/netfilter.h>		/* for NF_ACCEPT */
+#include <errno.h>
 
 #include <libnetfilter_queue/libnetfilter_queue.h>
 
 /* returns packet id */
-static u_int32_t print_pkt (struct nfq_data *tb)
+static uint32_t print_pkt (struct nfq_data *tb)
 {
 	int id = 0;
 	struct nfqnl_msg_packet_hdr *ph;
 	struct nfqnl_msg_packet_hw *hwph;
-	u_int32_t mark,ifi; 
+	uint32_t mark, ifi, uid, gid;
 	int ret;
-	char *data;
+	unsigned char *data, *secdata;
 
 	ph = nfq_get_msg_packet_hdr(tb);
 	if (ph) {
@@ -54,6 +55,16 @@ static u_int32_t print_pkt (struct nfq_data *tb)
 	if (ifi)
 		printf("physoutdev=%u ", ifi);
 
+	if (nfq_get_uid(tb, &uid))
+		printf("uid=%u ", uid);
+
+	if (nfq_get_gid(tb, &gid))
+		printf("gid=%u ", gid);
+
+	ret = nfq_get_secctx(tb, &secdata);
+	if (ret > 0)
+		printf("secctx=\"%.*s\" ", ret, secdata);
+
 	ret = nfq_get_payload(tb, &data);
 	if (ret >= 0)
 		printf("payload_len=%d ", ret);
@@ -67,7 +78,7 @@ static u_int32_t print_pkt (struct nfq_data *tb)
 static int cb(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg,
 	      struct nfq_data *nfa, void *data)
 {
-	u_int32_t id = print_pkt(nfa);
+	uint32_t id = print_pkt(nfa);
 	printf("entering callback\n");
 	return nfq_set_verdict(qh, id, NF_ACCEPT, 0, NULL);
 }
@@ -76,10 +87,18 @@ int main(int argc, char **argv)
 {
 	struct nfq_handle *h;
 	struct nfq_q_handle *qh;
-	struct nfnl_handle *nh;
 	int fd;
 	int rv;
+	uint32_t queue = 0;
 	char buf[4096] __attribute__ ((aligned));
+
+	if (argc == 2) {
+		queue = atoi(argv[1]);
+		if (queue > 65535) {
+			fprintf(stderr, "Usage: %s [<0-65535>]\n", argv[0]);
+			exit(EXIT_FAILURE);
+		}
+	}
 
 	printf("opening library handle\n");
 	h = nfq_open();
@@ -100,8 +119,8 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
-	printf("binding this socket to queue '0'\n");
-	qh = nfq_create_queue(h,  0, &cb, NULL);
+	printf("binding this socket to queue '%d'\n", queue);
+	qh = nfq_create_queue(h, queue, &cb, NULL);
 	if (!qh) {
 		fprintf(stderr, "error during nfq_create_queue()\n");
 		exit(1);
@@ -113,11 +132,41 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
+	printf("setting flags to request UID and GID\n");
+	if (nfq_set_queue_flags(qh, NFQA_CFG_F_UID_GID, NFQA_CFG_F_UID_GID)) {
+		fprintf(stderr, "This kernel version does not allow to "
+				"retrieve process UID/GID.\n");
+	}
+
+	printf("setting flags to request security context\n");
+	if (nfq_set_queue_flags(qh, NFQA_CFG_F_SECCTX, NFQA_CFG_F_SECCTX)) {
+		fprintf(stderr, "This kernel version does not allow to "
+				"retrieve security context.\n");
+	}
+
+	printf("Waiting for packets...\n");
+
 	fd = nfq_fd(h);
 
-	while ((rv = recv(fd, buf, sizeof(buf), 0)) && rv >= 0) {
-		printf("pkt received\n");
-		nfq_handle_packet(h, buf, rv);
+	for (;;) {
+		if ((rv = recv(fd, buf, sizeof(buf), 0)) >= 0) {
+			printf("pkt received\n");
+			nfq_handle_packet(h, buf, rv);
+			continue;
+		}
+		/* if your application is too slow to digest the packets that
+		 * are sent from kernel-space, the socket buffer that we use
+		 * to enqueue packets may fill up returning ENOBUFS. Depending
+		 * on your application, this error may be ignored. Please, see
+		 * the doxygen documentation of this library on how to improve
+		 * this situation.
+		 */
+		if (rv < 0 && errno == ENOBUFS) {
+			printf("losing packets!\n");
+			continue;
+		}
+		perror("recv failed");
+		break;
 	}
 
 	printf("unbinding from queue 0\n");

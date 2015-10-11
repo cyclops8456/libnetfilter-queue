@@ -1,12 +1,8 @@
 #ifndef _NFNETLINK_QUEUE_H
 #define _NFNETLINK_QUEUE_H
 
-#ifndef aligned_u64
-#define aligned_u64 unsigned long long __attribute__((aligned(8)))
-#endif
-
 #include <linux/types.h>
-#include <libnfnetlink/linux_nfnetlink.h>
+#include <linux/netfilter/nfnetlink.h>
 
 enum nfqnl_msg_types {
 	NFQNL_MSG_PACKET,		/* packet from kernel to userspace */
@@ -53,7 +49,7 @@ enum nfqnl_attr_type {
 	NFQA_EXP,			/* nf_conntrack_netlink.h */
 	NFQA_UID,			/* __u32 sk uid */
 	NFQA_GID,			/* __u32 sk gid */
-	NFQA_SECCTX,			/* security context string */
+	NFQA_SECCTX,
 
 	__NFQA_MAX
 };
@@ -115,7 +111,5 @@ enum nfqnl_attr_config {
 #define NFQA_SKB_CSUMNOTREADY (1 << 0)
 /* packet is GSO (i.e., exceeds device mtu) */
 #define NFQA_SKB_GSO (1 << 1)
-/* csum not validated (incoming device doesn't support hw checksum, etc.) */
-#define NFQA_SKB_CSUM_NOTVERIFIED (1 << 2)
 
 #endif /* _NFNETLINK_QUEUE_H */
