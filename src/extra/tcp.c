@@ -19,6 +19,7 @@
 
 #include <libnetfilter_queue/libnetfilter_queue.h>
 #include <libnetfilter_queue/libnetfilter_queue_tcp.h>
+#include <libnetfilter_queue/libnetfilter_queue_ipv4.h>
 #include <libnetfilter_queue/pktbuff.h>
 
 #include "internal.h"
@@ -135,12 +136,12 @@ int nfq_tcp_snprintf(char *buf, size_t size, const struct tcphdr *tcph)
 #define TCP_RESERVED_BITS htonl(0x0F000000)
 
 	ret = snprintf(buf, size, "SPT=%u DPT=%u SEQ=%u ACK=%u "
-				   "WINDOW=%u RES=%0x%02x ",
+				   "WINDOW=%u RES=0x%02x ",
 			ntohs(tcph->source), ntohs(tcph->dest),
 			ntohl(tcph->seq), ntohl(tcph->ack_seq),
 			ntohs(tcph->window),
-			(uint8_t)(ntohl(tcp_flag_word(tcph) &
-				TCP_RESERVED_BITS) >> 22));
+			(uint8_t)
+			(ntohl(tcp_flag_word(tcph) & TCP_RESERVED_BITS) >> 22));
 	len += ret;
 
 	if (tcph->urg) {
@@ -167,10 +168,22 @@ int nfq_tcp_snprintf(char *buf, size_t size, const struct tcphdr *tcph)
 		ret = snprintf(buf+len, size-len, "FIN ");
 		len += ret;
 	}
-	/* Not TCP options implemented yet, sorry. */
+	/* XXX: Not TCP options implemented yet, sorry. */
+
+	return ret;
 }
 EXPORT_SYMBOL(nfq_tcp_snprintf);
 
+/**
+ * nfq_tcp_mangle_ipv4 - mangle TCP/IPv4 packet buffer
+ * \param pktb: pointer to network packet buffer
+ * \param match_offset: offset to content that you want to mangle
+ * \param match_len: length of the existing content you want to mangle
+ * \param rep_buffer: pointer to data you want to use to replace current content
+ * \param rep_len: length of data you want to use to replace current content
+ *
+ * \note This function recalculates the IPv4 and TCP checksums for you.
+ */
 int
 nfq_tcp_mangle_ipv4(struct pkt_buff *pkt,
 		    unsigned int match_offset, unsigned int match_len,

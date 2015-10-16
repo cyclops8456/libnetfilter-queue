@@ -24,6 +24,8 @@
  *
  * This library provides the user-space network packet buffer. This abstraction
  * is strongly inspired by Linux kernel network buffer, the so-called sk_buff.
+ *
+ * @{
  */
 
 /**
@@ -83,56 +85,103 @@ pktb_alloc(int family, void *data, size_t len, size_t extra)
 	return pktb;
 }
 
+/**
+ * pktb_data - return pointer to the beginning of the packet buffer
+ * \param pktb Pointer to packet buffer
+ */
 uint8_t *pktb_data(struct pkt_buff *pktb)
 {
 	return pktb->data;
 }
 
+/**
+ * pktb_len - return length of the packet buffer
+ * \param pktb Pointer to packet buffer
+ */
 uint32_t pktb_len(struct pkt_buff *pktb)
 {
 	return pktb->len;
 }
 
+/**
+ * pktb_free - release packet buffer
+ * \param pktb Pointer to packet buffer
+ */
 void pktb_free(struct pkt_buff *pktb)
 {
 	free(pktb);
 }
 
+/**
+ * pktb_push - update pointer to the beginning of the packet buffer
+ * \param pktb Pointer to packet buffer
+ */
 void pktb_push(struct pkt_buff *pktb, unsigned int len)
 {
-	pktb->data += len;
+	pktb->data -= len;
+	pktb->len += len;
 }
 
+/**
+ * pktb_pull - update pointer to the beginning of the packet buffer
+ * \param pktb Pointer to packet buffer
+ */
 void pktb_pull(struct pkt_buff *pktb, unsigned int len)
 {
-	pktb->data -= len;
+	pktb->data += len;
+	pktb->len -= len;
 }
 
+/**
+ * pktb_put - add extra bytes to the tail of the packet buffer
+ * \param pktb Pointer to packet buffer
+ */
 void pktb_put(struct pkt_buff *pktb, unsigned int len)
 {
 	pktb->tail += len;
+	pktb->len += len;
 }
 
+/**
+ * pktb_trim - set new length for this packet buffer
+ * \param pktb Pointer to packet buffer
+ */
 void pktb_trim(struct pkt_buff *pktb, unsigned int len)
 {
 	pktb->len = len;
 }
 
+/**
+ * pktb_tailroom - get room in bytes in the tail of the packet buffer
+ * \param pktb Pointer to packet buffer
+ */
 unsigned int pktb_tailroom(struct pkt_buff *pktb)
 {
 	return pktb->data_len - pktb->len;
 }
 
+/**
+ * pktb_mac_header - return pointer to layer 2 header (if any)
+ * \param pktb Pointer to packet buffer
+ */
 uint8_t *pktb_mac_header(struct pkt_buff *pktb)
 {
 	return pktb->mac_header;
 }
 
+/**
+ * pktb_network_header - return pointer to layer 3 header
+ * \param pktb Pointer to packet buffer
+ */
 uint8_t *pktb_network_header(struct pkt_buff *pktb)
 {
 	return pktb->network_header;
 }
 
+/**
+ * pktb_transport_header - return pointer to layer 4 header (if any)
+ * \param pktb Pointer to packet buffer
+ */
 uint8_t *pktb_transport_header(struct pkt_buff *pktb)
 {
 	return pktb->transport_header;
@@ -140,10 +189,16 @@ uint8_t *pktb_transport_header(struct pkt_buff *pktb)
 
 static int pktb_expand_tail(struct pkt_buff *pkt, int extra)
 {
-	/* XXX: support reallocation case. */
+	/* No room in packet, cannot mangle it. We don't support dynamic
+	 * reallocation. Instead, increase the size of the extra room in
+	 * the tail in pktb_alloc.
+	 */
+	if (pkt->len + extra > pkt->data_len)
+		return 0;
+
 	pkt->len += extra;
 	pkt->tail = pkt->tail + extra;
-	return 0;
+	return 1;
 }
 
 static int enlarge_pkt(struct pkt_buff *pkt, unsigned int extra)
@@ -151,7 +206,7 @@ static int enlarge_pkt(struct pkt_buff *pkt, unsigned int extra)
 	if (pkt->len + extra > 65535)
 		return 0;
 
-	if (pktb_expand_tail(pkt, extra - pktb_tailroom(pkt)))
+	if (!pktb_expand_tail(pkt, extra - pktb_tailroom(pkt)))
 		return 0;
 
 	return 1;
@@ -193,6 +248,10 @@ int pktb_mangle(struct pkt_buff *pkt,
 }
 EXPORT_SYMBOL(pktb_mangle);
 
+/**
+ * pktb_mangled - return true if packet has been mangled
+ * \param pktb Pointer to packet buffer
+ */
 bool pktb_mangled(const struct pkt_buff *pkt)
 {
 	return pkt->mangled;
